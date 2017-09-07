@@ -1,10 +1,11 @@
-== Spring Web JDBC API Simplicity: A GenericDAO-based API framework implemented in Kotlin (Fully compatible with Java)
+== Spring Simplicity: A tiny framework for building fast and reliable RESTful APIs in Kotlin.
 
-The purpose of this project is to provide lightweight and easy to use framework for building APIs for small projects.
-It provides a Generic Controller implementation for a CRUD API, easily extensible, based on the RestController of the Spring Boot and Spring Web projects.
-It also provides a Generic DAO implementation for relational databases based on the Spring Data projects,
-compatible with https://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/jdbc/core/JdbcTemplate.html[JdbcTemplate] from https://projects.spring.io/spring-framework[Spring framework]
-and. It’s intended for small applications where JPA is an overkill and for applications that can benefit from the smaller (and faster!) execution code.
+The purpose of this project is to provide lightweight and easy to use framework for building https://en.wikipedia.org/wiki/Representational_state_transfer[RESTful API]s for small projects that depends on https://en.wikipedia.org/wiki/Relational_database[Relational Databases].
+
+It provides a Generic Controller implementation for a simple https://en.wikipedia.org/wiki/Create,_read,_update_and_delete[CRUD] API, easily extensible, based on the RestController class of the https://spring.io/guides/gs/rest-service/[Spring Boot Starter Web] project.
+It also provides a Generic DAO implementation for relational databases, based on the JdbcTemplate class of the http://projects.spring.io/spring-data-jdbc-ext/[Spring Data JDBC Extensions] project.
+In general, Spring Simplicity provides a fast start for https://projects.spring.io/spring-framework[Spring framework]-based projects. 
+It’s intended for small applications where https://en.wikipedia.org/wiki/Java_Persistence_API[JPA] is an overkill and for applications that can benefit from the smaller (and faster!) execution code.
 
 This project was inspired by https://github.com/nurkiewicz/spring-data-jdbc-repository[nurkiewicz's jdbc-repository project], but it has been completely rewritten in Kotlin,
 so we chose to create a new repository, rather than a fork. It also uses Gradle rather than Maven. Nevertheless, that nurkiewicz's original project in Java (release 0.5.0) should be properly credited.
@@ -15,7 +16,7 @@ so we chose to create a new repository, rather than a fork. It also uses Gradle 
 * Written to make Kotlin strengths shine: data classes, extension functions, null safety, ...
 * Restful Controller for any data class out-of-the-box.
 * *Not a full-blown ORM*, this is a simple Data Mapper.
-* Just a https://en.wikipedia.org/wiki/Don't_repeat_yourself[DRY] https://en.wikipedia.org/wiki/Create,_read,_update_and_delete[CRUD].
+* Just a https://en.wikipedia.org/wiki/Don't_repeat_yourself[DRY] CRUD.
 * Standard repository interface from https://projects.spring.io/spring-data[Spring Data]; allow easier migration to other Spring Data implementations (e.g. JPA, Couchbase…).footnote:[Since your code will rely only on interfaces from Spring Web and Spring Data projects, you are free to switch from `JdbcRepository` implementation (from this project) to `JpaRepository`, `GemfireRepository`, `GraphRepository`… see https://projects.spring.io/spring-data[Spring Data webpage]. They all implement the same common API. Of course don’t expect that switching from JDBC to e.g. JPA will be as simple as switching imported JAR dependencies – but at least you minimize the impact by using same DAO API.]
 * Minimalistic support for database dialect differences (e.g. transparent paging of results).
 * No relationship handling, lazy loading, dirty checking, multi-level caching, etc.
