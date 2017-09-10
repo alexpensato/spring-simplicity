@@ -8,8 +8,8 @@ import org.springframework.util.Assert
 import org.springframework.web.bind.annotation.*
 import java.io.Serializable
 
-abstract class AbstractController<T: Any, ID : Serializable, R : JdbcRepository<T, ID>>
-@Autowired constructor(var repository: R)
+abstract class AbstractController<T: Any, ID : Serializable>
+@Autowired constructor(var repository: JdbcRepository<T, ID>)
 {
     @RequestMapping(method = arrayOf(RequestMethod.GET))
     @ResponseBody
