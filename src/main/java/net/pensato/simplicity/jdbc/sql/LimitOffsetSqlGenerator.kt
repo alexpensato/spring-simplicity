@@ -37,8 +37,14 @@ class LimitOffsetSqlGenerator : DefaultSqlGenerator() {
     }
 
     override fun selectAll(table: TableDescription, page: Pageable): String {
-        return format("%s LIMIT %d OFFSET %d",
-                selectAll(table, page.sort), page.pageSize, page.offset)
+        val sb = StringBuilder()
+        if (page.sort == null) {
+            sb.append(selectAll(table))
+        } else {
+            sb.append(selectAll(table, page.sort))
+        }
+        sb.append(" LIMIT ${page.pageSize} OFFSET ${page.offset}")
+        return sb.toString()
     }
 
     companion object {

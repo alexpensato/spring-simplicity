@@ -1,5 +1,5 @@
 group 'net.pensato.simplicity'
-version '0.6.1'
+version '0.6.10'
 
 buildscript {
     ext {
@@ -44,7 +44,6 @@ repositories {
 dependencies {
     // Kotlin language
     compile("org.jetbrains.kotlin:kotlin-stdlib:${kotlinVersion}")
-	compile("org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}")
 
     // Spring
     compile("org.springframework:spring-web")

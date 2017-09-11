@@ -15,6 +15,8 @@
  */
 package net.pensato.simplicity.jdbc
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.NoRepositoryBean
 import java.io.Serializable
@@ -35,9 +37,11 @@ interface JdbcRepository<T: Any, ID : Serializable> {
 
     fun findAll(sort: Sort): List<T>
 
+    fun findAll(pageable: Pageable): Page<T>
+
     fun findAll(ids: Iterable<ID>): List<T>
 
-    fun findOne(id: Any): T
+    fun findOne(id: Any): T?
 
     fun delete(id: Any): Int
 
@@ -45,7 +49,7 @@ interface JdbcRepository<T: Any, ID : Serializable> {
 
     fun <S : T> save(entities: Iterable<S>): List<S>
 
-    fun <S : T> insert(entity: S): ID?
+    fun <S : T> create(entity: S): ID?
 
     fun <S : T> update(entity: S): Int
 }

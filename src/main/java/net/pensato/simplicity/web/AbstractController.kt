@@ -3,6 +3,9 @@ package net.pensato.simplicity.web
 import net.pensato.simplicity.extra.idFromEntity
 import net.pensato.simplicity.jdbc.JdbcRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.util.Assert
 import org.springframework.web.bind.annotation.*
@@ -12,9 +15,8 @@ abstract class AbstractController<T: Any, ID : Serializable>
 @Autowired constructor(var repository: JdbcRepository<T, ID>)
 {
     @RequestMapping(method = arrayOf(RequestMethod.GET))
-    @ResponseBody
-    fun findAll(): List<T> {
-        return repository.findAll()
+    fun findAll(pageable: Pageable): Page<T> {
+        return repository.findAll(pageable)
     }
 
     @RequestMapping(value = "/count", method = arrayOf(RequestMethod.GET))
@@ -25,7 +27,7 @@ abstract class AbstractController<T: Any, ID : Serializable>
 
     @RequestMapping(value = "/{id}", method = arrayOf(RequestMethod.GET))
     @ResponseBody
-    fun findById(@PathVariable id: Long?): T {
+    fun findById(@PathVariable id: Long?): T? {
         Assert.notNull(id, "You must provide an ID to locate an item in the repository.")
         return repository.findOne(id!!)
     }
