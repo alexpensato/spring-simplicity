@@ -34,10 +34,6 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.util.*
 import org.springframework.data.domain.PageImpl
-import java.lang.reflect.AccessibleObject.setAccessible
-import com.sun.xml.internal.bind.v2.model.core.ID
-
-
 
 
 @Repository
