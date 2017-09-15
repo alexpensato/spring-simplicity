@@ -81,7 +81,11 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional(readOnly=true)
     override fun findAll(pageable: Pageable): Page<T> {
         val list = jdbcTemplate.query(sqlGenerator.selectAll(tableDesc, pageable), rowMapper)
-        val count = count()
+        val count = if (Companion.counter < 0) {
+            count()
+        } else {
+            Companion.counter
+        }
         return PageImpl<T>(list, pageable, count)
     }
 
@@ -98,7 +102,11 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
 
     @Transactional(readOnly=true)
     override fun count(): Long {
-        return jdbcTemplate.queryForObject(sqlGenerator.count(tableDesc), Long::class.java)
+        val count = jdbcTemplate.queryForObject(sqlGenerator.count(tableDesc), Long::class.java)
+        if (Companion.counter < 0) {
+            Companion.setup(count)
+        }
+        return count
     }
 
     @Transactional(readOnly=true)
@@ -109,7 +117,9 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
 
     @Transactional
     override fun delete(id: Any): Int {
-        return jdbcTemplate.update(sqlGenerator.deleteByPK(tableDesc), id)
+        val count = jdbcTemplate.update(sqlGenerator.deleteByPK(tableDesc), id)
+        Companion.decrease()
+        return count
     }
 
     override fun <S : T> save(entity: S): S {
@@ -125,6 +135,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
                     field.set(entity, result)
                 }
             }
+            Companion.increase()
             entity
         } else {
             println(id)
@@ -186,6 +197,24 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             ps
         }, keyHolder)
         return keyHolder.keys.get(idName) as ID?
+    }
+
+    companion object {
+        var counter: Long = -1
+        fun increase() {
+            counter += 1
+        }
+        fun decrease() {
+            counter -= 1
+        }
+        fun reset(value: Long) {
+            counter = value
+        }
+        @Synchronized
+        fun setup(value: Long) {
+            if (counter < 0)
+                counter = value
+        }
     }
 
 }
