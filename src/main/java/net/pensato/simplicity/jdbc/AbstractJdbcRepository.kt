@@ -34,6 +34,8 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.util.*
 import org.springframework.data.domain.PageImpl
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 
 @Repository
@@ -57,6 +59,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
         }
         this.tableDesc = TableDescription(tableName, columns, idName)
         this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource)
+        count()
     }
 
     override fun afterPropertiesSet() {
@@ -81,12 +84,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional(readOnly=true)
     override fun findAll(pageable: Pageable): Page<T> {
         val list = jdbcTemplate.query(sqlGenerator.selectAll(tableDesc, pageable), rowMapper)
-        val count = if (Companion.counter < 0) {
-            count()
-        } else {
-            Companion.counter
-        }
-        return PageImpl<T>(list, pageable, count)
+        return PageImpl<T>(list, pageable, Companion.counter)
     }
 
     @Transactional(readOnly=true)
@@ -103,9 +101,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional(readOnly=true)
     override fun count(): Long {
         val count = jdbcTemplate.queryForObject(sqlGenerator.count(tableDesc), Long::class.java)
-        if (Companion.counter < 0) {
-            Companion.setup(count)
-        }
+        Companion.reset(count)
         return count
     }
 
@@ -117,9 +113,13 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
 
     @Transactional
     override fun delete(id: Any): Int {
-        val count = jdbcTemplate.update(sqlGenerator.deleteByPK(tableDesc), id)
-        Companion.decrease()
-        return count
+        val lineCount = jdbcTemplate.update(sqlGenerator.deleteByPK(tableDesc), id)
+        if (ChronoUnit.MINUTES.between(Companion.lastUpdated, LocalDateTime.now()) > 3) {
+            count()
+        } else {
+            Companion.decrease()
+        }
+        return lineCount
     }
 
     override fun <S : T> save(entity: S): S {
@@ -135,10 +135,13 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
                     field.set(entity, result)
                 }
             }
-            Companion.increase()
+            if (ChronoUnit.MINUTES.between(Companion.lastUpdated, LocalDateTime.now()) > 3) {
+                count()
+            } else {
+                Companion.increase()
+            }
             entity
         } else {
-            println(id)
             val rowsAffected = update(entity)
             entity
         }
@@ -200,6 +203,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     }
 
     companion object {
+        var lastUpdated: LocalDateTime = LocalDateTime.now()
         var counter: Long = -1
         fun increase() {
             counter += 1
@@ -209,11 +213,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
         }
         fun reset(value: Long) {
             counter = value
-        }
-        @Synchronized
-        fun setup(value: Long) {
-            if (counter < 0)
-                counter = value
+            lastUpdated = LocalDateTime.now()
         }
     }
 
