@@ -59,7 +59,6 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
         }
         this.tableDesc = TableDescription(tableName, columns, idName)
         this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource)
-        count()
     }
 
     override fun afterPropertiesSet() {
@@ -212,8 +211,8 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             counter -= 1
         }
         fun reset(value: Long) {
-            counter = value
             lastUpdated = LocalDateTime.now()
+            counter = value
         }
     }
 
