@@ -211,8 +211,8 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             counter -= 1
         }
         fun reset(value: Long) {
-            lastUpdated = LocalDateTime.now()
             counter = value
+            lastUpdated = LocalDateTime.now()
         }
     }
 
