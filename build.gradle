@@ -1,5 +1,5 @@
 group 'net.pensato'
-version '0.6.17'
+version '0.6.18'
 description 'A tiny framework for building fast and reliable RESTful APIs in Kotlin.'
 
 buildscript {
@@ -57,6 +57,9 @@ dependencies {
 
     // Google Guava
     api("com.google.guava:guava:23.2-jre")
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+    compile("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.2")
+
 
     // Database
 //    compile("postgresql:postgresql:9.1-901-1.jdbc4")
