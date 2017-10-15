@@ -15,6 +15,7 @@
  */
 package net.pensato.simplicity.jdbc.sql
 
+import com.google.common.base.CaseFormat
 import net.pensato.simplicity.jdbc.TableDescription
 import net.pensato.simplicity.extra.printAsString
 import net.pensato.simplicity.extra.repeat
@@ -99,7 +100,7 @@ open class DefaultSqlGenerator : SqlGenerator {
     protected fun orderByClause(sort: Sort): String {
         val sj = StringJoiner(COMMA, " ORDER BY ", BLANK)
         for(s in sort)
-            sj.add("${s.property} ${s.direction}")
+            sj.add("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s.property)} ${s.direction}")
         return sj.toString()
     }
 
