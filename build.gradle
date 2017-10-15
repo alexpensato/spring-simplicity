@@ -1,5 +1,6 @@
-group 'net.pensato.simplicity'
-version '0.6.14'
+group 'net.pensato'
+version '0.6.17'
+description 'A tiny framework for building fast and reliable RESTful APIs in Kotlin.'
 
 buildscript {
     ext {
@@ -12,18 +13,18 @@ buildscript {
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
-        classpath("com.netflix.nebula:gradle-extra-configurations-plugin:3.0.3")
-        classpath ("org.junit.platform:junit-platform-gradle-plugin:1.0.0-M2")
+        classpath("org.junit.platform:junit-platform-gradle-plugin:1.0.0-M2")
+        classpath("ru.vyarus:gradle-java-lib-plugin:1.0.5")
     }
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
-apply plugin: 'war'
-apply plugin: 'nebula.provided-base'
 apply plugin: 'org.junit.platform.gradle.plugin'
+// https://github.com/xvik/gradle-java-lib-plugin
+apply plugin: 'ru.vyarus.java-lib'
 
 junitPlatform {
     platformVersion = '1.0.0-M2'
@@ -33,12 +34,15 @@ junitPlatform {
     }
 }
 
-repositories {
-    mavenCentral()
-    jcenter()
+jar {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
 
-    maven { url "https://repo.eclipse.org/content/repositories/paho-snapshots/" }
-    maven { url "https://raw.github.com/eburtsev/gdata-maven/master/" }
+repositories {
+    jcenter()
 }
 
 dependencies {
@@ -48,11 +52,11 @@ dependencies {
     // Spring
     compile("org.springframework:spring-web")
     compile("org.springframework:spring-beans")
-    compile("org.springframework:spring-jdbc")
-    compile("org.springframework.data:spring-data-commons")
+    api("org.springframework:spring-jdbc")
+    api("org.springframework.data:spring-data-commons")
 
     // Google Guava
-    compile("com.google.guava:guava:23.2-jre")
+    api("com.google.guava:guava:23.2-jre")
 
     // Database
 //    compile("postgresql:postgresql:9.1-901-1.jdbc4")
@@ -63,4 +67,12 @@ dependencies {
     testCompile 'org.jetbrains.spek:spek-api:1.0.89'
     testCompile 'org.amshove.kluent:kluent:1.11'
     testRuntime 'org.jetbrains.spek:spek-junit-platform-engine:1.0.89'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
 }
