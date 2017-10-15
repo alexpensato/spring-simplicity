@@ -15,6 +15,7 @@
  */
 package net.pensato.simplicity.jdbc
 
+import com.google.common.base.CaseFormat
 import net.pensato.simplicity.extra.idFromEntity
 import net.pensato.simplicity.jdbc.exception.NoRecordUpdatedException
 import net.pensato.simplicity.extra.toArray
@@ -55,7 +56,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
         var i = 0
         for (p in allProperties) {
             if(p.name != idName)
-            columns[i++] = p.name
+            columns[i++] = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, p.name)
         }
         this.tableDesc = TableDescription(tableName, columns, idName)
         this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource)
@@ -198,7 +199,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             }
             ps
         }, keyHolder)
-        return keyHolder.keys.get(idName) as ID?
+        return keyHolder.key as ID?
     }
 
     companion object {

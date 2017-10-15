@@ -23,11 +23,10 @@ interface TransactionalRowMapper<T>: RowMapper<T> {
 
     fun columnsValues(entity: T, columns: Array<String>): Array<Any> {
         val map = this.mapColumns(entity)
-
         return Array<Any>(columns.size, { i -> (if (map[columns[i]] != null) {
                 map.getValue(columns[i])
             } else {
-                throw NoSuchFieldException("Companion object row unmapper does not match entity.")
+                throw NoSuchFieldException("Companion object row unmapper does not match entity: ${columns[i]}. Size: ${columns.size}")
             })
         })
     }
