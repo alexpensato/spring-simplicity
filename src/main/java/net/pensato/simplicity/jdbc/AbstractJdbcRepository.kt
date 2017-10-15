@@ -50,6 +50,9 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
 
     private var initialized: Boolean = false
 
+    var lastUpdated: LocalDateTime = LocalDateTime.now()
+    var counter: Long = -1L
+
     init {
         val allProperties = jclass.declaredFields
         val columns: Array<String> = Array<String>(allProperties.size - 1, {""})
@@ -84,7 +87,10 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional(readOnly=true)
     override fun findAll(pageable: Pageable): Page<T> {
         val list = jdbcTemplate.query(sqlGenerator.selectAll(tableDesc, pageable), rowMapper)
-        return PageImpl<T>(list, pageable, Companion.counter)
+        if (counter == -1L) {
+            count()
+        }
+        return PageImpl<T>(list, pageable, counter)
     }
 
     @Transactional(readOnly=true)
@@ -101,7 +107,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional(readOnly=true)
     override fun count(): Long {
         val count = jdbcTemplate.queryForObject(sqlGenerator.count(tableDesc), Long::class.java)
-        Companion.reset(count)
+        resetCounter(count)
         return count
     }
 
@@ -114,10 +120,10 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional
     override fun delete(id: Any): Int {
         val lineCount = jdbcTemplate.update(sqlGenerator.deleteByPK(tableDesc), id)
-        if (ChronoUnit.MINUTES.between(Companion.lastUpdated, LocalDateTime.now()) > 3) {
+        if (ChronoUnit.MINUTES.between(lastUpdated, LocalDateTime.now()) > 3 || counter == -1L) {
             count()
         } else {
-            Companion.decrease()
+            decreaseCounter()
         }
         return lineCount
     }
@@ -135,10 +141,10 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
                     field.set(entity, result)
                 }
             }
-            if (ChronoUnit.MINUTES.between(Companion.lastUpdated, LocalDateTime.now()) > 3) {
+            if (ChronoUnit.MINUTES.between(lastUpdated, LocalDateTime.now()) > 3 || counter == -1L) {
                 count()
             } else {
-                Companion.increase()
+                increaseCounter()
             }
             entity
         } else {
@@ -202,19 +208,15 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
         return keyHolder.key as ID?
     }
 
-    companion object {
-        var lastUpdated: LocalDateTime = LocalDateTime.now()
-        var counter: Long = -1
-        fun increase() {
-            counter += 1
-        }
-        fun decrease() {
-            counter -= 1
-        }
-        fun reset(value: Long) {
-            counter = value
-            lastUpdated = LocalDateTime.now()
-        }
+    fun increaseCounter() {
+        counter += 1
+    }
+    fun decreaseCounter() {
+        counter -= 1
+    }
+    fun resetCounter(value: Long) {
+        counter = value
+        lastUpdated = LocalDateTime.now()
     }
 
 }
