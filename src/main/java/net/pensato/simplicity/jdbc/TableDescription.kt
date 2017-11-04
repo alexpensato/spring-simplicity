@@ -31,10 +31,10 @@ class TableDescription {
         this.columns = columns
     }
 
-    constructor(tableName: String, columns: Array<String>, selectClause: String?, vararg pkColumns: String) :
-            this(tableName, columns, selectClause, null, *pkColumns) {}
-
-    constructor(tableName: String, columns: Array<String>, vararg pkColumns: String) :
-            this(tableName, columns, null, *pkColumns) {}
+//    constructor(tableName: String, columns: Array<String>, selectClause: String?, vararg pkColumns: String) :
+//            this(tableName, columns, selectClause, null, *pkColumns) {}
+//
+//    constructor(tableName: String, columns: Array<String>, vararg pkColumns: String) :
+//            this(tableName, columns, null, *pkColumns) {}
 
 }

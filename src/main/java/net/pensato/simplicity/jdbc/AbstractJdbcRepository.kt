@@ -41,7 +41,7 @@ import java.time.temporal.ChronoUnit
 
 @Repository
 abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
-@Autowired constructor(var jdbcTemplate: JdbcTemplate, tableName: String, jclass: Class<T>, val idName: String) : JdbcRepository<T, ID>, InitializingBean
+@Autowired constructor(var jdbcTemplate: JdbcTemplate, tableName: String, fromClause: String?, jclass: Class<T>, val idName: String) : JdbcRepository<T, ID>, InitializingBean
 {
     abstract val rowMapper: TransactionalRowMapper<T>
 
@@ -66,9 +66,19 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             } else {
                 null
             }
-        this.tableDesc = TableDescription(tableName, columns, selectClause, idName)
+        this.tableDesc = TableDescription(tableName, columns, selectClause, fromClause, idName)
         this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource)
     }
+
+    constructor(@Autowired jdbcTemplate: JdbcTemplate, tableName: String, jclass: Class<T>, idName: String):
+            this(jdbcTemplate, tableName, null, jclass, idName) {}
+
+    constructor(@Autowired jdbcTemplate: JdbcTemplate, jclass: Class<T>, fromClause: String?):
+            this(jdbcTemplate, CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, jclass.simpleName), fromClause, jclass, "id") {}
+
+    constructor(@Autowired jdbcTemplate: JdbcTemplate, jclass: Class<T>):
+            this(jdbcTemplate, CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, jclass.simpleName), null, jclass, "id") {}
+
 
     override fun afterPropertiesSet() {
         initialized = true
