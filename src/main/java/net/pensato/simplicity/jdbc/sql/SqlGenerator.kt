@@ -45,9 +45,15 @@ interface SqlGenerator {
 
     fun selectAll(table: TableDescription): String
 
+    fun selectAll(table: TableDescription, whereClause: String): String
+
     fun selectAll(table: TableDescription, page: Pageable): String
 
+    fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String
+
     fun selectAll(table: TableDescription, sort: Sort): String
+
+    fun selectAll(table: TableDescription, whereClause: String, sort: Sort): String
 
     fun selectByPK(table: TableDescription): String
 

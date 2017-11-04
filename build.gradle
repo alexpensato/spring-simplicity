@@ -1,5 +1,5 @@
 group 'net.pensato'
-version '0.6.21'
+version '0.6.22'
 description 'A tiny framework for building fast and reliable RESTful APIs in Kotlin.'
 
 buildscript {

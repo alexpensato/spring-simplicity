@@ -45,4 +45,11 @@ class SQL2008SqlGenerator : DefaultSqlGenerator() {
         return format("%s OFFSET %d ROWS FETCH NEXT %d ROW ONLY",
                 selectAll(table, sort), page.offset, page.pageSize)
     }
+
+    override fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String {
+        val sort = if (page.sort != null) page.sort else sortByPKs(table.pkColumns)
+
+        return format("%s OFFSET %d ROWS FETCH NEXT %d ROW ONLY",
+                selectAll(table, whereClause, sort), page.offset, page.pageSize)
+    }
 }

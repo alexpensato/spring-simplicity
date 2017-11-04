@@ -47,6 +47,17 @@ class LimitOffsetSqlGenerator : DefaultSqlGenerator() {
         return sb.toString()
     }
 
+    override fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String {
+        val sb = StringBuilder()
+        if (page.sort == null) {
+            sb.append(selectAll(table, whereClause))
+        } else {
+            sb.append(selectAll(table, whereClause, page.sort))
+        }
+        sb.append(" LIMIT ${page.pageSize} OFFSET ${page.offset}")
+        return sb.toString()
+    }
+
     companion object {
 
         private val SUPPORTED_PRODUCTS = asList("PostgreSQL", "H2", "HSQL Database Engine", "MySQL")

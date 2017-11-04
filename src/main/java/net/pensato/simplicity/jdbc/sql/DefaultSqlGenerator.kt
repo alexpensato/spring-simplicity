@@ -73,6 +73,10 @@ open class DefaultSqlGenerator : SqlGenerator {
         return "SELECT ${table.selectClause} FROM ${table.fromClause}"
     }
 
+    override fun selectAll(table: TableDescription, whereClause: String): String {
+        return "${selectAll(table)} WHERE $whereClause"
+    }
+
     override fun selectAll(table: TableDescription, page: Pageable): String {
         val sort = page.sort ?: sortByPKs(table.pkColumns)
 
@@ -85,8 +89,25 @@ open class DefaultSqlGenerator : SqlGenerator {
         return sb.toString()
     }
 
+    override fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String {
+        val sort = page.sort ?: sortByPKs(table.pkColumns)
+
+        val sb = StringBuilder()
+        sb.append("SELECT t2__.* FROM ( ")
+        sb.append("SELECT row_number() OVER ( ${orderByClause(sort)} ) AS rn__, t1__.* ")
+        sb.append("FROM ( ${selectAll(table)} ) t1__ ")
+        sb.append("WHERE $whereClause ")
+        sb.append(") t2__ WHERE t2__.rn__ BETWEEN ${page.offset + 1} AND ${page.offset + page.pageSize}")
+
+        return sb.toString()
+    }
+
     override fun selectAll(table: TableDescription, sort: Sort): String {
         return "${selectAll(table)} ${orderByClause(sort)}"
+    }
+
+    override fun selectAll(table: TableDescription, whereClause: String, sort: Sort): String {
+        return "${selectAll(table,whereClause)} ${orderByClause(sort)}"
     }
 
     override fun selectByPK(table: TableDescription): String {

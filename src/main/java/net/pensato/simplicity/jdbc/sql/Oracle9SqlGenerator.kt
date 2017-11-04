@@ -45,4 +45,13 @@ class Oracle9SqlGenerator : DefaultSqlGenerator() {
                 + ") t2__ WHERE t2__.rn__ > %d AND ROWNUM <= %d",
                 selectAll(table, sort), page.offset, page.pageSize)
     }
+
+    override fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String {
+        val sort = if (page.sort != null) page.sort else sortByPKs(table.pkColumns)
+
+        return format("SELECT t2__.* FROM ( "
+                + "SELECT t1__.*, ROWNUM as rn__ FROM ( %s ) t1__ "
+                + ") t2__ WHERE t2__.rn__ > %d AND ROWNUM <= %d",
+                selectAll(table, whereClause, sort), page.offset, page.pageSize)
+    }
 }
