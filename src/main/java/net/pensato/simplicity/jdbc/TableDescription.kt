@@ -35,8 +35,6 @@ class TableDescription {
             this(tableName, columns, null, fromClause, *pkColumns) {}
 
     constructor(tableName: String, columns: Array<String>, vararg pkColumns: String) :
-            this(tableName, columns, null, *pkColumns) {
-
-    }
+            this(tableName, columns, null, *pkColumns) {}
 
 }

@@ -61,7 +61,12 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             if(p.name != idName)
             columns[i++] = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, p.name)
         }
-        this.tableDesc = TableDescription(tableName, columns, idName)
+        val fromClause: String? = if(columns.size > 0) {
+                "$idName, ${columns.joinToString(", ")}"
+            } else {
+                null
+            }
+        this.tableDesc = TableDescription(tableName, columns, fromClause, idName)
         this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource)
     }
 
