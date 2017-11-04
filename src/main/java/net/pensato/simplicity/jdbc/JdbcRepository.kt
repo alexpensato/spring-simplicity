@@ -39,6 +39,12 @@ interface JdbcRepository<T: Any, ID : Serializable> {
 
     fun findAll(pageable: Pageable): Page<T>
 
+    fun findAll(whereClause: String): List<T>
+
+    fun findAll(whereClause: String, sort: Sort): List<T>
+
+    fun findAll(whereClause: String, pageable: Pageable): Page<T>
+
     fun findAll(ids: Iterable<ID>): List<T>
 
     fun findOne(id: Any): T?

@@ -99,6 +99,25 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     }
 
     @Transactional(readOnly=true)
+    override fun findAll(whereClause: String): List<T> {
+        return jdbcTemplate.query(sqlGenerator.selectAll(tableDesc, whereClause), rowMapper)
+    }
+
+    @Transactional(readOnly=true)
+    override fun findAll(whereClause: String, sort: Sort): List<T> {
+        return jdbcTemplate.query(sqlGenerator.selectAll(tableDesc, whereClause, sort), rowMapper)
+    }
+
+    @Transactional(readOnly=true)
+    override fun findAll(whereClause: String, pageable: Pageable): Page<T> {
+        val list = jdbcTemplate.query(sqlGenerator.selectAll(tableDesc, whereClause, pageable), rowMapper)
+        if (counter == -1L) {
+            count()
+        }
+        return PageImpl<T>(list, pageable, counter)
+    }
+
+    @Transactional(readOnly=true)
     override fun findOne(id: Any): T? {
         val resultList =  jdbcTemplate.query(sqlGenerator.selectByPK(tableDesc), arrayOf(id), rowMapper)
         if (resultList != null && resultList.isNotEmpty()) {
