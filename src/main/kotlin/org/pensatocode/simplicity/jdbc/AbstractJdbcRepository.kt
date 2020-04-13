@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 twitter.com/PensatoAlex
+ * Copyright 2017-2020 twitter.com/PensatoAlex
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.pensato.simplicity.jdbc
+package org.pensatocode.simplicity.jdbc
 
-import com.google.common.base.CaseFormat
-import net.pensato.simplicity.extra.idFromEntity
-import net.pensato.simplicity.jdbc.exception.NoRecordUpdatedException
-import net.pensato.simplicity.extra.toArray
-import net.pensato.simplicity.jdbc.mapper.TransactionalRowMapper
-import net.pensato.simplicity.jdbc.sql.SqlGenerator
-import net.pensato.simplicity.jdbc.sql.SqlGeneratorFactory
+import org.pensatocode.simplicity.extra.convertToSnakeCase
+import org.pensatocode.simplicity.extra.toArray
+import org.pensatocode.simplicity.jdbc.exception.NoRecordUpdatedException
+import org.pensatocode.simplicity.jdbc.mapper.TransactionalRowMapper
+import org.pensatocode.simplicity.jdbc.sql.SqlGenerator
+import org.pensatocode.simplicity.jdbc.sql.SqlGeneratorFactory
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.jdbc.JdbcUpdateAffectedIncorrectNumberOfRowsException
@@ -32,16 +32,17 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.support.GeneratedKeyHolder
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.util.Assert
+import java.beans.PropertyDescriptor
 import java.io.Serializable
-import java.util.*
-import org.springframework.data.domain.PageImpl
+import java.lang.reflect.Method
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-
+import java.util.*
 
 @Repository
 abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
-@Autowired constructor(var jdbcTemplate: JdbcTemplate, tableName: String, fromClause: String?, jclass: Class<T>, val idName: String) : JdbcRepository<T, ID>, InitializingBean
+@Autowired constructor(final var jdbcTemplate: JdbcTemplate, tableName: String, fromClause: String?, jclass: Class<T>, val idName: String) : JdbcRepository<T, ID>, InitializingBean
 {
     abstract val rowMapper: TransactionalRowMapper<T>
 
@@ -59,7 +60,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
         var i = 0
         for (p in allProperties) {
             if(p.name != idName)
-            columns[i++] = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, p.name)
+            columns[i++] = convertToSnakeCase(p.name)
         }
         val selectClause: String? = if(columns.size > 0) {
                 "$idName, ${columns.joinToString(", ")}"
@@ -67,17 +68,17 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
                 null
             }
         this.tableDesc = TableDescription(tableName, columns, selectClause, fromClause, idName)
-        this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource)
+        this.sqlGenerator = SqlGeneratorFactory.getGenerator(jdbcTemplate.dataSource!!)
     }
 
     constructor(@Autowired jdbcTemplate: JdbcTemplate, tableName: String, jclass: Class<T>, idName: String):
             this(jdbcTemplate, tableName, null, jclass, idName) {}
 
     constructor(@Autowired jdbcTemplate: JdbcTemplate, jclass: Class<T>, fromClause: String?):
-            this(jdbcTemplate, CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, jclass.simpleName), fromClause, jclass, "id") {}
+            this(jdbcTemplate, convertToSnakeCase(jclass.simpleName), fromClause, jclass, "id") {}
 
     constructor(@Autowired jdbcTemplate: JdbcTemplate, jclass: Class<T>):
-            this(jdbcTemplate, CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, jclass.simpleName), null, jclass, "id") {}
+            this(jdbcTemplate, convertToSnakeCase(jclass.simpleName), null, jclass, "id") {}
 
 
     override fun afterPropertiesSet() {
@@ -130,18 +131,17 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
     @Transactional(readOnly=true)
     override fun findOne(id: Any): T? {
         val resultList =  jdbcTemplate.query(sqlGenerator.selectByPK(tableDesc), arrayOf(id), rowMapper)
-        if (resultList != null && resultList.isNotEmpty()) {
+        if (resultList.isNotEmpty()) {
             return resultList[0]
         } else {
             return null
         }
-
     }
 
     @Transactional(readOnly=true)
     override fun count(): Long {
         val count = jdbcTemplate.queryForObject(sqlGenerator.count(tableDesc), Long::class.java)
-        resetCounter(count)
+        resetCounter(count!!)
         return count
     }
 
@@ -197,6 +197,13 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
 
 
     @Transactional
+    override fun <S : T> update(entity: S, id: Long?): Int {
+        val entityId = idFromEntity<T, ID>(entity)
+        Assert.state(entityId == id, "The item you are trying to update is not the same as the pointed repository location.")
+        return this.update(entity)
+    }
+
+    @Transactional
     override fun <S : T> update(entity: S): Int {
         val updateQuery = sqlGenerator.update(tableDesc)
         val params = rowMapper.columnsValues(entity, tableDesc.columns)
@@ -240,6 +247,13 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
             ps
         }, keyHolder)
         return keyHolder.key as ID?
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T: Any, ID: Serializable> idFromEntity(entity: T): ID? {
+        val propertyDescriptor = PropertyDescriptor(idName, entity.javaClass)
+        val getterMethod: Method = propertyDescriptor.getReadMethod()
+        return getterMethod.invoke(entity) as ID?
     }
 
     fun increaseCounter() {

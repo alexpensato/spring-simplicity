@@ -25,7 +25,7 @@ so we chose to create a new repository, rather than a fork. It also uses Gradle 
 == Contributions
 
 …are always welcome.
-Don’t hesitate to submit a https://github.com/alexpensato/spring-simplicity/issues[bug report] or a https://github.com/alexpensato/spring-simplicity/pulls[pull requests].
+Don’t hesitate to submit a https://github.com/alexpensato/spring-simplicity-kotlin/issues[bug report] or a https://github.com/alexpensato/spring-simplicity-kotlin/pulls[pull requests].
 
 When filling a bug report or submitting a new feature, please try including supporting test cases.
 

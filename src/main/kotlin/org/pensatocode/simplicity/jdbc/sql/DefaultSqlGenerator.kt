@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 twitter.com/PensatoAlex
+ * Copyright 2017-2020 twitter.com/PensatoAlex
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.pensato.simplicity.jdbc.sql
+package org.pensatocode.simplicity.jdbc.sql
 
-import com.google.common.base.CaseFormat
-import net.pensato.simplicity.jdbc.TableDescription
-import net.pensato.simplicity.extra.printAsString
-import net.pensato.simplicity.extra.repeat
+import org.pensatocode.simplicity.extra.convertToSnakeCase
+import org.pensatocode.simplicity.jdbc.TableDescription
+import org.pensatocode.simplicity.extra.printAsString
+import org.pensatocode.simplicity.extra.repeat
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Direction
@@ -33,13 +33,10 @@ import java.util.*
  */
 open class DefaultSqlGenerator : SqlGenerator {
 
-
-
     @Throws(SQLException::class)
     override fun isCompatible(metadata: DatabaseMetaData): Boolean {
         return true
     }
-
 
     override fun count(table: TableDescription): String {
         return "SELECT count(*) FROM ${table.tableName}"
@@ -78,25 +75,19 @@ open class DefaultSqlGenerator : SqlGenerator {
     }
 
     override fun selectAll(table: TableDescription, page: Pageable): String {
-        val sort = page.sort ?: sortByPKs(table.pkColumns)
-
-        val sb = StringBuilder()
-        sb.append("SELECT t2__.* FROM ( ")
-        sb.append("SELECT row_number() OVER ( ${orderByClause(sort)} ) AS rn__, t1__.* ")
-        sb.append("FROM ( ${selectAll(table)} ) t1__ ")
-        sb.append(") t2__ WHERE t2__.rn__ BETWEEN ${page.offset + 1} AND ${page.offset + page.pageSize}")
-
-        return sb.toString()
+        return selectAll(table, BLANK, page)
     }
 
     override fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String {
-        val sort = page.sort ?: sortByPKs(table.pkColumns)
+        val sort = if (page.sort.isSorted) { page.sort } else { sortByPKs(table.pkColumns) }
 
         val sb = StringBuilder()
         sb.append("SELECT t2__.* FROM ( ")
         sb.append("SELECT row_number() OVER ( ${orderByClause(sort)} ) AS rn__, t1__.* ")
         sb.append("FROM ( ${selectAll(table)} ) t1__ ")
-        sb.append("WHERE $whereClause ")
+        if (BLANK != whereClause) {
+            sb.append("WHERE $whereClause ")
+        }
         sb.append(") t2__ WHERE t2__.rn__ BETWEEN ${page.offset + 1} AND ${page.offset + page.pageSize}")
 
         return sb.toString()
@@ -115,13 +106,13 @@ open class DefaultSqlGenerator : SqlGenerator {
     }
 
     protected fun sortByPKs(pks: Array<String>): Sort {
-        return Sort(Direction.ASC, *pks)
+        return Sort.by(Direction.ASC, *pks)
     }
 
     protected fun orderByClause(sort: Sort): String {
         val sj = StringJoiner(COMMA, " ORDER BY ", BLANK)
         for(s in sort)
-            sj.add("${CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, s.property)} ${s.direction}")
+            sj.add("${convertToSnakeCase(s.property)} ${s.direction}")
         return sj.toString()
     }
 

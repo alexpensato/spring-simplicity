@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 twitter.com/PensatoAlex
+ * Copyright 2017-2020 twitter.com/PensatoAlex
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.pensato.simplicity.jdbc.sql
+package org.pensatocode.simplicity.jdbc.sql
 
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessResourceFailureException
@@ -48,7 +48,6 @@ object SqlGeneratorFactory {
      * @throws IllegalStateException if no compatible SQL Generator is found.
      */
     fun getGenerator(dataSource: DataSource): SqlGenerator {
-
         if (cache.containsKey(dataSource)) {
             return cache[dataSource] as SqlGenerator
         }

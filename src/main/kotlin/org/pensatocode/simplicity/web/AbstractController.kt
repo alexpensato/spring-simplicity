@@ -1,16 +1,30 @@
-package net.pensato.simplicity.web
+/*
+ * Copyright 2017-2020 twitter.com/PensatoAlex
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.pensatocode.simplicity.web
 
-import net.pensato.simplicity.extra.idFromEntity
-import net.pensato.simplicity.jdbc.JdbcRepository
+import org.pensatocode.simplicity.jdbc.JdbcRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.util.Assert
 import org.springframework.web.bind.annotation.*
 import java.io.Serializable
 
+@RestController
 abstract class AbstractController<T: Any, ID : Serializable>
 @Autowired constructor(var repository: JdbcRepository<T, ID>)
 {
@@ -19,36 +33,34 @@ abstract class AbstractController<T: Any, ID : Serializable>
         return repository.findAll(pageable)
     }
 
-    @RequestMapping(value = "/count", method = arrayOf(RequestMethod.GET))
+    @GetMapping("/count")
     @ResponseBody
     open fun count(): Long {
         return repository.count()
     }
 
-    @RequestMapping(value = "/{id}", method = arrayOf(RequestMethod.GET))
+    @GetMapping("/{id}")
     @ResponseBody
     open fun findById(@PathVariable id: Long?): T? {
         Assert.notNull(id, "You must provide an ID to locate an item in the repository.")
         return repository.findOne(id!!)
     }
 
-    @RequestMapping(value = "/{id}", method = arrayOf(RequestMethod.DELETE))
+    @DeleteMapping("/{id}")
     @ResponseBody
     open fun delete(@PathVariable id: Long?): String {
         Assert.notNull(id, "You must provide an ID to delete an item from the repository.")
         return "Total itens deleted: ${repository.delete(id!!)}."
     }
 
-    @RequestMapping(value = "/{id}", method = arrayOf(RequestMethod.PUT))
+    @PutMapping("/{id}")
     @ResponseBody
     open fun update(@PathVariable id: Long?, @RequestBody t: T): String {
         Assert.notNull(id, "You must provide an ID to update an item in the repository.")
-        val entityId = idFromEntity<T, ID>(t)
-        Assert.state(entityId == id, "The item you are trying to update is not the same as the pointed repository location.")
-        return "Total itens updated: ${repository.update(t)}."
+        return "Total itens updated: ${repository.update(t, id)}."
     }
 
-    @RequestMapping(method = arrayOf(RequestMethod.POST))
+    @PostMapping()
     @ResponseStatus(HttpStatus.CREATED)
     open fun insert(@RequestBody t: T): T {
         return repository.save(t)

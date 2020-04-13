@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 twitter.com/PensatoAlex
+ * Copyright 2017-2020 twitter.com/PensatoAlex
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.pensato.simplicity.jdbc.sql
+package org.pensatocode.simplicity.jdbc.sql
 
-import net.pensato.simplicity.jdbc.TableDescription
+import org.pensatocode.simplicity.jdbc.TableDescription
 import org.springframework.data.domain.Pageable
 
 import java.sql.DatabaseMetaData
@@ -40,14 +40,14 @@ class SQL2008SqlGenerator : DefaultSqlGenerator() {
     }
 
     override fun selectAll(table: TableDescription, page: Pageable): String {
-        val sort = if (page.sort != null) page.sort else sortByPKs(table.pkColumns)
+        val sort = if (page.sort.isSorted) page.sort else sortByPKs(table.pkColumns)
 
         return format("%s OFFSET %d ROWS FETCH NEXT %d ROW ONLY",
                 selectAll(table, sort), page.offset, page.pageSize)
     }
 
     override fun selectAll(table: TableDescription, whereClause: String, page: Pageable): String {
-        val sort = if (page.sort != null) page.sort else sortByPKs(table.pkColumns)
+        val sort = if (page.sort.isSorted) page.sort else sortByPKs(table.pkColumns)
 
         return format("%s OFFSET %d ROWS FETCH NEXT %d ROW ONLY",
                 selectAll(table, whereClause, sort), page.offset, page.pageSize)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 twitter.com/PensatoAlex
+ * Copyright 2017-2020 twitter.com/PensatoAlex
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.pensato.simplicity.jdbc
+package org.pensatocode.simplicity.jdbc
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -58,4 +58,6 @@ interface JdbcRepository<T: Any, ID : Serializable> {
     fun <S : T> create(entity: S): ID?
 
     fun <S : T> update(entity: S): Int
+
+    fun <S : T> update(entity: S, id: Long?): Int
 }
