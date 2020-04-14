@@ -28,7 +28,7 @@ import java.io.Serializable
 abstract class AbstractController<T: Any, ID : Serializable>
 @Autowired constructor(var repository: JdbcRepository<T, ID>)
 {
-    @RequestMapping(method = arrayOf(RequestMethod.GET))
+    @GetMapping
     open fun findAll(pageable: Pageable): Page<T> {
         return repository.findAll(pageable)
     }
@@ -41,21 +41,21 @@ abstract class AbstractController<T: Any, ID : Serializable>
 
     @GetMapping("/{id}")
     @ResponseBody
-    open fun findById(@PathVariable id: Long?): T? {
+    open fun findById(@PathVariable id: ID?): T? {
         Assert.notNull(id, "You must provide an ID to locate an item in the repository.")
         return repository.findOne(id!!)
     }
 
     @DeleteMapping("/{id}")
     @ResponseBody
-    open fun delete(@PathVariable id: Long?): String {
+    open fun delete(@PathVariable id: ID?): String {
         Assert.notNull(id, "You must provide an ID to delete an item from the repository.")
         return "Total itens deleted: ${repository.delete(id!!)}."
     }
 
     @PutMapping("/{id}")
     @ResponseBody
-    open fun update(@PathVariable id: Long?, @RequestBody t: T): String {
+    open fun update(@PathVariable id: ID?, @RequestBody t: T): String {
         Assert.notNull(id, "You must provide an ID to update an item in the repository.")
         return "Total itens updated: ${repository.update(t, id)}."
     }

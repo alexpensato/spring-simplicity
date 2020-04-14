@@ -197,7 +197,7 @@ abstract class AbstractJdbcRepository<T: Any, ID : Serializable>
 
 
     @Transactional
-    override fun <S : T> update(entity: S, id: Long?): Int {
+    override fun <S : T> update(entity: S, id: ID?): Int {
         val entityId = idFromEntity<T, ID>(entity)
         Assert.state(entityId == id, "The item you are trying to update is not the same as the pointed repository location.")
         return this.update(entity)

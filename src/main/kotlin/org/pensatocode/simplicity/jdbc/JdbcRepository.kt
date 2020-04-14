@@ -59,5 +59,5 @@ interface JdbcRepository<T: Any, ID : Serializable> {
 
     fun <S : T> update(entity: S): Int
 
-    fun <S : T> update(entity: S, id: Long?): Int
+    fun <S : T> update(entity: S, id: ID?): Int
 }
