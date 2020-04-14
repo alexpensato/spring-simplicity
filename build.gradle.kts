@@ -4,6 +4,7 @@ val springBootVersion = "2.2.6.RELEASE"
 val springVersion = "5.2.5.RELEASE"
 val jacksonVersion = "2.10.3"
 val h2Version = "1.4.200"
+val spekVersion = "1.1.5"
 
 plugins {
     `java-library`
@@ -46,6 +47,9 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
+
+    testImplementation("org.jetbrains.spek:spek-api:${spekVersion}")
+    testImplementation("org.jetbrains.spek:spek-junit-platform-engine:${spekVersion}")
 }
 
 tasks.withType<Test> {

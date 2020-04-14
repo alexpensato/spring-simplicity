@@ -1,4 +1,4 @@
-package net.pensato.simplicity
+package org.pensatocode.simplicity
 
 import org.mockito.Mockito
 
